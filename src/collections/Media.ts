@@ -1,25 +1,33 @@
+import { put } from '@vercel/blob'
 import {
   BeforeChangeHook,
   CollectionConfig,
 } from 'node_modules/payload/dist/collections/config/types'
 
-const ensureCorrectURL: BeforeChangeHook = ({ data, req }) => {
-  console.log('--- Media beforeChange Hook Başladı ---')
+// Bu hook, dosyayı DOĞRUDAN Vercel Blob'a yükler
+const uploadToVercel: BeforeChangeHook = async ({ data, req }) => {
+  // Sadece bir dosya yükleniyorsa devam et
+  if (req.file && req.file.data) {
+    const file = req.file
+    console.log(`--- Vercel Blob Yükleme Başladı: ${file.name} ---`)
 
-  const file = req.file as any
+    try {
+      // Vercel'in 'put' fonksiyonunu kullanarak dosyayı yüklüyoruz
+      const blob = await put(file.name, file.data, {
+        access: 'public',
+      })
 
-  // Gelen req.file objesinin tamamını loglayalım, içinde ne var görelim.
-  console.log('Gelen req.file objesi:', file)
+      console.log('✅ Vercel Blob Yükleme Başarılı:', blob)
 
-  if (file?.url) {
-    console.log('✅ req.file.url bulundu:', file.url)
-    data.url = file.url
-    console.log('📝 data.url alanı güncellendi.')
-  } else {
-    console.log('❌ req.file.url bulunamadı! Bu yüzden data.url güncellenemedi.')
+      // Veritabanına kaydedilecek olan 'data' objesini,
+      // Vercel'den dönen GERÇEK URL ile güncelliyoruz.
+      data.url = blob.url
+      return data
+    } catch (error: any) {
+      console.error('Vercel Blob Upload Error:', error)
+      throw new Error(`Dosya Vercel Blob'a yüklenemedi: ${error.message}`)
+    }
   }
-
-  console.log('--- Hook Bitişi: Veritabanına kaydedilecek son veri ---', data)
   return data
 }
 
@@ -28,11 +36,9 @@ export const Media: CollectionConfig = {
   access: {
     read: () => true,
   },
-  upload: {
-    adminThumbnail: ({ doc }) => doc.url as string,
-  },
+  upload: true, // Payload'un dosya handling'ini aktif etmesi için bu gerekli
   hooks: {
-    beforeChange: [ensureCorrectURL],
+    beforeChange: [uploadToVercel],
   },
   fields: [
     {
