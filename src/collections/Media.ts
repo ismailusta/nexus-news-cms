@@ -1,5 +1,4 @@
 import type { CollectionConfig } from 'payload'
-
 export const Media: CollectionConfig = {
   slug: 'media',
   access: {
@@ -11,6 +10,16 @@ export const Media: CollectionConfig = {
       type: 'text',
       required: true,
     },
+    {
+      name: 'url',
+      type: 'text',
+      admin: {
+        hidden: true,
+      },
+    },
   ],
-  upload: true,
+  upload: {
+    disableLocalStorage: true,
+    adminThumbnail: ({ doc }) => doc.url as string,
+  },
 }
