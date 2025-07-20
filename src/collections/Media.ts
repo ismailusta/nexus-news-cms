@@ -36,7 +36,9 @@ export const Media: CollectionConfig = {
   access: {
     read: () => true,
   },
-  upload: true, // Payload'un dosya handling'ini aktif etmesi için bu gerekli
+  upload: {
+    disableLocalStorage: true,
+  },
   hooks: {
     beforeChange: [uploadToVercel],
   },
