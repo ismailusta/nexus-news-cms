@@ -1,46 +1,36 @@
-import type { CollectionConfig } from 'payload'
+import { CollectionConfig } from 'payload'
+import { put } from '@vercel/blob'
+import { nanoid } from 'nanoid'
 
 export const Media: CollectionConfig = {
   slug: 'media',
-  access: {
-    read: () => true,
-  },
-  fields: [
-    {
-      name: 'alt',
-      type: 'text',
-      required: true,
-    },
-    {
-      name: 'url',
-      type: 'text',
-      admin: {
-        hidden: true,
-      },
-    },
-  ],
   upload: {
     disableLocalStorage: true,
-    adminThumbnail: ({ doc }) => doc.url as string,
   },
   hooks: {
     beforeChange: [
-      ({ req, data }) => {
-        const maybeUrl = (req?.file as { url?: string })?.url
+      async ({ data, req }) => {
+        const file = req?.file
 
-        console.log('--- Media Upload Hook Log ---')
-        console.log('File object:', req?.file)
-        console.log('Extracted file.url:', maybeUrl)
+        if (!file) return data
 
-        if (maybeUrl) {
-          data.url = maybeUrl
-          console.log('✅ data.url güncellendi:', data.url)
-        } else {
-          console.warn('⚠️ file.url bulunamadı. data.url güncellenmedi.')
+        const fileName = `${Date.now()}-${nanoid()}-${file.name}`
+
+        const blob = await put(fileName, file.data, {
+          access: 'public',
+        })
+
+        return {
+          ...data,
+          url: blob.url,
         }
-
-        return data
       },
     ],
   },
+  fields: [
+    {
+      name: 'url',
+      type: 'text',
+    },
+  ],
 }
