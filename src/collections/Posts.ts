@@ -23,6 +23,12 @@ export const Posts: CollectionConfig = {
       required: true,
     },
     {
+      name: 'subcategories',
+      label: 'Alt Kategoriler',
+      type: 'relationship',
+      relationTo: 'categories',
+    },
+    {
       name: 'slug',
       label: 'Slug (URL)',
       type: 'text',

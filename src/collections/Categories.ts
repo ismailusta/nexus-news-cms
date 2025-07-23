@@ -17,6 +17,12 @@ export const Categories: CollectionConfig = {
       required: true,
     },
     {
+      name: 'subcategories',
+      label: 'Alt Kategoriler',
+      type: 'text',
+      required: true,
+    },
+    {
       name: 'slug',
       label: 'Slug (URL)',
       type: 'text',
