@@ -25,8 +25,7 @@ export const Posts: CollectionConfig = {
     {
       name: 'subcategories',
       label: 'Alt Kategoriler',
-      type: 'relationship',
-      relationTo: 'categories',
+      type: 'text',
     },
     {
       name: 'slug',
